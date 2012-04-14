@@ -10,6 +10,10 @@ handlers:
   static_dir: static/img
 - url: /js
   static_dir: static/js
+- url: /checksite.*
+  script: site_alive_checker.py
+  login: admin
+  secure: always
 - url: /.*
   script: main.py
   login: admin

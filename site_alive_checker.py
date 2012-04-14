@@ -19,30 +19,30 @@ class SendMail(webapp.RequestHandler):
 
 def sendMail(body="Site is not alive"):
   mail.send_mail(
-     sender="site alive cheker <hnakamur@gmail.com>",
-     to="hnakamur+sitealivechecker@gmail.com",
+     sender="site alive cheker <nakamura-hiroaki@kayac.com>",
+     to="nakamura-hiroaki+sitealivechecker@kayac.com",
      subject="site is not alive",
      body=body)
 
 class CheckSiteForever(webapp.RequestHandler):
   def get(self):
     try:
-      result = urlfetch.fetch(url="http://naruh.net/")
+      result = urlfetch.fetch(url="http://okazu-star.com/")
       if result.status_code != 200:
         sendMail("%s Status code=%d" % (datetime.now(), result.status_code))
       self.response.out.write("Status=%d" % result.status_code)
     except urlfetch.DownloadError, e:
       sendMail("Error: %s" % e)
-    taskqueue.add(url='/checksiteforever', method='GET', countdown=30)
+    taskqueue.add(url='/checksiteforever', method='GET', countdown=60)
 
 class CheckSite(webapp.RequestHandler):
   def get(self):
     try:
-      result = urlfetch.fetch(url="http://naruh.net/")
+      result = urlfetch.fetch(url="http://okazu-star.com/")
       if result.status_code != 200:
         sendMail("Status code=%d" % result.status_code)
       self.response.out.write("Status=%d" % result.status_code)
-    except urlfetch.DownloadError, e:
+    except urlfetch.Error, e:
       sendMail("Error: %s" % e)
 
 application = webapp.WSGIApplication(
