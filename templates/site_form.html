@@ -1,9 +1,3 @@
-{% extends "templates/base.html" %}
-{% from "templates/_formhelpers.html" import field_errors %}
-{% block title %}Add a Site{% endblock %}
-
-{% block content %}
-<h1>Add a Site</h1>
 <form name="site" action="/sites/add" class="form-horizontal" method="POST">
   <div class="control-group">
     <label class="control-label" for="input01">Site name</label>
@@ -20,24 +14,10 @@
     </div>
   </div>
   <div class="control-group">
-    <label class="control-label" for="input01">Sender address</label>
-    <div class="controls">
-      {{ form.sender(class_="input-xlarge") }}
-      {{ field_errors(form.sender) }}
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="input01">Recipient address</label>
+    <label class="control-label" for="input01">Email address</label>
     <div class="controls">
       {{ form.recipient(class_="input-xlarge") }}
       {{ field_errors(form.recipient) }}
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="input01">Mail subject</label>
-    <div class="controls">
-      {{ form.subject(class_="input-xlarge") }}
-      {{ field_errors(form.subject) }}
     </div>
   </div>
   <div class="control-group">
@@ -47,17 +27,11 @@
       {{ field_errors(form.interval_minutes) }}
     </div>
   </div>
-  <div class="control-group">
-    <label class="control-label" for="select01">Watching enabled</label>
-    <div class="controls">
-      {{ form.watching_enabled }}
-      {{ field_errors(form.watching_enabled) }}
-    </div>
-  </div>
+  {% block form_actions %}
   <div class="form-actions">
     <button type="submit" class="btn btn-primary">Save</button>
      
     <button type="reset" class="btn">Cancel</button>
   </div>
+  {% endblock %}
 </form>
-{% endblock %}

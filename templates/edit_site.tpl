@@ -1,10 +1,10 @@
 {% extends "templates/base.html" %}
 {% from "templates/_formhelpers.html" import field_errors %}
-{% block title %}Add a Site{% endblock %}
+{% block title %}Edit a Site{% endblock %}
 
 {% block content %}
-<h1>Add a Site</h1>
-<form name="site" action="/sites/add" class="form-horizontal" method="POST">
+<h1>Edit a Site</h1>
+<form name="site" action="/site/{{ key|e }}" class="form-horizontal" method="POST">
   <div class="control-group">
     <label class="control-label" for="input01">Site name</label>
     <div class="controls">
@@ -55,9 +55,10 @@
     </div>
   </div>
   <div class="form-actions">
-    <button type="submit" class="btn btn-primary">Save</button>
+    <button type="submit" class="btn btn-primary" name="action" value="edit">Save</button>
+    <button type="submit" class="btn btn-primary" name="action" value="delete">Delete</button>
      
-    <button type="reset" class="btn">Cancel</button>
+    <button type="reset" class="btn" name="action" value="cancel">Cancel</button>
   </div>
 </form>
 {% endblock %}
