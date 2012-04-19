@@ -1,11 +1,12 @@
-from bottle import (
-  default_app, get, post, redirect, request, jinja2_template as template
-)
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+import webapp2
+from webapp2 import redirect
+import micro_webapp2
 from google.appengine.api import mail
 from google.appengine.api import urlfetch
 from google.appengine.api.labs import taskqueue
 from google.appengine.ext import db
-from google.appengine.ext.webapp.util import run_wsgi_app
 from wtforms import BooleanField, Form, SelectField, TextField
 from wtforms.validators import Required, URL, Email
 
@@ -45,20 +46,23 @@ class SiteForm(Form):
   subject = TextField("Mail subject", validators=[Required()])
   watching_enabled = BooleanField("Watching enabled")
 
-@get('/')
-@get('/sites')
-def sites():
+
+app = micro_webapp2.WSGIApplication()
+
+@app.route('/')
+@app.route('/sites')
+def sites(request):
   sites = Site.gql('ORDER BY created_at DESC').fetch(LIST_LIMIT)
-  return template('templates/index', sites=sites)
+  return app.render('index.html', sites=sites)
 
-@get('/sites/add')
-def showAddSiteForm():
+@app.route('/sites/add', methods='GET')
+def showAddSiteForm(request):
   form = SiteForm()
-  return template('templates/add_site', form=form)
+  return app.render('add_site.html', form=form)
 
-@post('/sites/add')
-def addSite():
-  form = SiteForm(request.forms)
+@app.route('/sites/add', methods='POST')
+def addSite(request):
+  form = SiteForm(request.POST)
   if form.validate():
     site = Site(name=form['name'].data,
                  url=form['url'].data,
@@ -72,10 +76,10 @@ def addSite():
       enqueueCheck(site)
     return redirect('/sites')
   else:
-    return template('templates/add_site', form=form)
+    return app.render('add_site.html', form=form)
 
-@get('/site/:key')
-def showSiteForm(key):
+@app.route('/site/<key>', methods='GET')
+def showSiteForm(request, key):
   site = db.get(key)
   form = SiteForm(name=site.name,
                   url=site.url,
@@ -84,13 +88,13 @@ def showSiteForm(key):
                   subject=site.subject,
                   interval_minutes=site.interval_minutes,
                   watching_enabled=site.watching_enabled)
-  return template('templates/edit_site', key=key, form=form)
+  return app.render('edit_site.html', key=key, form=form)
 
-@post('/site/:key')
-def updateSite(key):
-  form = SiteForm(request.forms)
+@app.route('/site/<key>', methods='POST')
+def updateSite(request, key):
+  form = SiteForm(request.POST)
   if form.validate():
-    action = request.forms['action']
+    action = request.POST['action']
     if action == 'edit':
       site = db.get(key)
       site.name = form['name'].data
@@ -107,21 +111,20 @@ def updateSite(key):
       db.delete(key)
     return redirect('/sites')
   else:
-    return template('templates/add_site', form=form)
+    return app.render('add_site.html', form=form)
 
 def enqueueCheck(site):
   taskqueue.add(url='/site/%s/loopcheck' % site.key(), method='POST',
       countdown=site.interval_minutes*60)
 
-@post('/site/:key/loopcheck')
-def loopCheck(key):
+@app.route('/site/<key>/loopcheck', methods='POST')
+def loopCheck(request, key):
   site = db.get(key)
   if site and site.watching_enabled:
     try:
       result = urlfetch.fetch(url=site.url)
       if result.status_code != 200:
         sendMail(site, "%s Status code=%d" % (datetime.now(), result.status_code))
-      self.response.out.write("Status=%d" % result.status_code)
     except urlfetch.DownloadError, e:
       sendMail(site, "Error: %s" % e)
     enqueueCheck(site)
@@ -132,16 +135,3 @@ def sendMail(site, body="Site is not alive"):
      to=site.recipient,
      subject=site.subject,
      body=body)
-
-class StripPathMiddleware(object):
-  def __init__(self, app):
-    self.app = app
-  def __call__(self, e, h):
-    e['PATH_INFO'] = e['PATH_INFO'].rstrip('/')
-    return self.app(e,h)
-
-def main():
-  run_wsgi_app(StripPathMiddleware(default_app()))
-
-if __name__ == '__main__':
-  main()

@@ -1,7 +1,14 @@
 application: site-alive-checker
 version: 1
-runtime: python
+runtime: python27
 api_version: 1
+threadsafe: true
+
+libraries:
+- name: jinja2
+  version: "2.6"
+- name: markupsafe
+  version: latest
 
 handlers:
 - url: /css
@@ -10,11 +17,13 @@ handlers:
   static_dir: static/img
 - url: /js
   static_dir: static/js
-- url: /checksite.*
-  script: site_alive_checker.py
-  login: admin
-  secure: always
+#- url: /.*
+#  script: myapp.app
+#- url: /checksiteforever.*
+#  script: site_alive_checker.app
+#  login: admin
+#  secure: always
 - url: /.*
-  script: main.py
+  script: main.app
   login: admin
   secure: always
