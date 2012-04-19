@@ -1,0 +1,6 @@
+# Site alive checker
+
+* works on Google App Engine, Python 2.7
+* using micro_webapp2, jinja2, WTForms
+* licensed under MIT license
+
